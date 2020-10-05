@@ -49,6 +49,11 @@
             <enum name="three" value="3" />
             <enum name="four" value="4" />
             <enum name="five" value="5" />
+            <enum name="six" value="6" />
+            <enum name="seven" value="7" />
+            <enum name="eight" value="8" />
+            <enum name="nine" value="9" />
+            <enum name="ten" value="10" />
         </attr>
 
 
@@ -59,7 +64,7 @@
             <enum name="four" value="4" />
             <enum name="five" value="5" />
             <enum name="six" value="6" />
-            <enum name="eleven" value="7" />
+            <enum name="seven" value="7" />
             <enum name="eight" value="8" />
             <enum name="nine" value="9" />
             <enum name="ten" value="10" />
