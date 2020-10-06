@@ -16,7 +16,7 @@ public class FontManager {
 
     private static final Map<String, Typeface> mFontCache = new HashMap<String, Typeface>();
 
-    private static final String FONTAWESOME = "fonts/fontawesome-webfont.ttf";
+    private static final String FONTAWESOME = "fonts/font_awesome_pro.otf";
 
     public static Typeface getTypeface(Context context) {
 

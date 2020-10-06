@@ -25,17 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//import com.kofigyan.stateprogressbar.components.StateItem;
-//import com.kofigyan.stateprogressbar.components.StateItemDescription;
-//import com.kofigyan.stateprogressbar.components.StateItemNumber;
-//import com.kofigyan.stateprogressbar.listeners.OnStateItemClickListener;
-//import com.kofigyan.stateprogressbar.utils.FontManager;
-
-
-/**
- * Created by Kofi Gyan on 4/19/2016.
- */
-
 public class StateProgressBar extends View {
 
 
@@ -146,13 +135,11 @@ public class StateProgressBar extends View {
     private Paint mStateNumberBackgroundPaint;
     private Paint mBackgroundPaint;
     private Paint mForegroundPaint;
-    private Paint mSuggestionPaint;
     private Paint mCurrentStateDescriptionPaint;
     private Paint mStateDescriptionPaint;
 
     private int mBackgroundColor;
     private int mForegroundColor;
-    private int mSuggestColor;
     private int mStateNumberBackgroundColor;
     private int mStateNumberForegroundColor;
     private int mCurrentStateDescriptionColor;
@@ -242,7 +229,6 @@ public class StateProgressBar extends View {
 
             mBackgroundColor = a.getColor(R.styleable.StateProgressBar_spb_stateBackgroundColor, mBackgroundColor);
             mForegroundColor = a.getColor(R.styleable.StateProgressBar_spb_stateForegroundColor, mForegroundColor);
-            mSuggestColor = a.getColor(R.styleable.StateProgressBar_spb_stateForegroundColor, mSuggestColor);
             mStateNumberBackgroundColor = a.getColor(R.styleable.StateProgressBar_spb_stateNumberBackgroundColor, mStateNumberBackgroundColor);
             mStateNumberForegroundColor = a.getColor(R.styleable.StateProgressBar_spb_stateNumberForegroundColor, mStateNumberForegroundColor);
             mCurrentStateDescriptionColor = a.getColor(R.styleable.StateProgressBar_spb_currentStateDescriptionColor, mCurrentStateDescriptionColor);
@@ -292,10 +278,8 @@ public class StateProgressBar extends View {
     }
 
     private void initializePainters() {
-
         mBackgroundPaint = setPaintAttributes(mStateLineThickness, mBackgroundColor);
         mForegroundPaint = setPaintAttributes(mStateLineThickness, mForegroundColor);
-        mSuggestionPaint = setPaintAttributes(mStateLineThickness, mSuggestColor);
 
         mStateNumberForegroundPaint = setPaintAttributes(mStateNumberTextSize, mStateNumberForegroundColor, mCustomStateNumberTypeface != null ? mCustomStateNumberTypeface : mDefaultTypefaceBold);
         mStateCheckedForegroundPaint = setPaintAttributes(mStateNumberTextSize, mStateNumberForegroundColor, mCheckFont);
@@ -347,13 +331,6 @@ public class StateProgressBar extends View {
         if (mStateSize <= mStateNumberTextSize) {
             mStateSize = mStateNumberTextSize + mStateNumberTextSize / 2;
         }
-    }
-
-    public void setSuggestColor(int suggestColor) {
-        this.mSuggestColor = suggestColor;
-        mSuggestionPaint.setColor(mSuggestColor);
-        invalidate();
-
     }
 
     public void setBackgroundColor(int backgroundColor) {
@@ -445,7 +422,6 @@ public class StateProgressBar extends View {
         updateCheckAllStatesValues(mEnableAllStatesCompleted);
         invalidate();
     }
-
     public int getCurrentStateNumber() {
         return mCurrentStateNumber;
     }
@@ -501,7 +477,6 @@ public class StateProgressBar extends View {
 
         mBackgroundPaint.setStrokeWidth(mStateLineThickness);
         mForegroundPaint.setStrokeWidth(mStateLineThickness);
-        mSuggestionPaint.setStrokeWidth(mStateLineThickness);
         requestLayout();
     }
 
@@ -943,7 +918,7 @@ public class StateProgressBar extends View {
 
     private void drawBackgroundCircles(Canvas canvas) {
 
-        int startIndex = mIsStateNumberDescending ? 0 : mCurrentStateNumber;
+        int startIndex = mIsStateNumberDescending ? 0 : mCurrentStateNumber+1;
         int endIndex = mIsStateNumberDescending ? mMaxStateNumber - mCurrentStateNumber : mMaxStateNumber;
 
         drawCircles(canvas, mBackgroundPaint, startIndex, endIndex);
@@ -952,14 +927,14 @@ public class StateProgressBar extends View {
     private void drawForegroundCircles(Canvas canvas) {
 
         int startIndex = mIsStateNumberDescending ? mMaxStateNumber - mCurrentStateNumber : 0;
-        int endIndex = mIsStateNumberDescending ? mMaxStateNumber : mCurrentStateNumber;
+        int endIndex = mIsStateNumberDescending ? mMaxStateNumber : mCurrentStateNumber+1;
 
         drawCircles(canvas, mForegroundPaint, startIndex, endIndex);
     }
 
 
     private void drawBackgroundLines(Canvas canvas) {
-        int startIndex = mIsStateNumberDescending ? 0 : mCurrentStateNumber - 1;
+        int startIndex = mIsStateNumberDescending ? 0 : mCurrentStateNumber;
         int endIndex = mIsStateNumberDescending ? mMaxStateNumber - mCurrentStateNumber + 1 : mMaxStateNumber;
 
         drawLines(canvas, mBackgroundPaint, startIndex, endIndex);
@@ -967,7 +942,7 @@ public class StateProgressBar extends View {
 
     private void drawForegroundLines(Canvas canvas) {
         int startIndex = mIsStateNumberDescending ? mMaxStateNumber - mCurrentStateNumber + 1 : 0;
-        int endIndex = mIsStateNumberDescending ? mMaxStateNumber : mCurrentStateNumber - 1;
+        int endIndex = mIsStateNumberDescending ? mMaxStateNumber : mCurrentStateNumber + 1;
 
         drawLines(canvas, mForegroundPaint, startIndex, endIndex);
     }
@@ -1207,32 +1182,36 @@ public class StateProgressBar extends View {
         boolean isChecked;
 
         for (int i = 0; i < noOfCircles; i++) {
+            if (i != mCurrentStateNumber){
+                innerPaintType = selectPaintType(mCurrentStateNumber, i, mCheckStateCompleted,noOfCircles);
+                xPos = (int) (mCellWidth * (i + 1) - (mCellWidth / 2));
 
-            innerPaintType = selectPaintType(mCurrentStateNumber, i, mCheckStateCompleted);
+                yPos = (int) ((mCellHeight / 2) - ((innerPaintType.descent() + innerPaintType.ascent()) / 2));
 
-            xPos = (int) (mCellWidth * (i + 1) - (mCellWidth / 2));
+                isChecked = isCheckIconUsed(mCurrentStateNumber, i);
 
-            yPos = (int) ((mCellHeight / 2) - ((innerPaintType.descent() + innerPaintType.ascent()) / 2));
+                if (mCheckStateCompleted && isChecked) {
+                    canvas.drawText(getContext().getString(R.string.check_icon), xPos, yPos, innerPaintType);
+                } else {
+                    if (mIsStateNumberDescending)
+                        canvas.drawText(getContext().getString(R.string.check_default), xPos, yPos, innerPaintType);
+                    else{
+                        canvas.drawText(getContext().getString(R.string.check_default), xPos, yPos, innerPaintType);
+                    }
+                }
+            }else {
+                innerPaintType = mStateCheckedForegroundPaint;
+                xPos = (int) (mCellWidth * (i + 1) - (mCellWidth / 2));
 
-            isChecked = isCheckIconUsed(mCurrentStateNumber, i);
+                yPos = (int) ((mCellHeight / 2) - ((innerPaintType.descent() + innerPaintType.ascent()) / 2));
 
-            if (mCheckStateCompleted && isChecked) {
-                canvas.drawText(getContext().getString(R.string.check_icon), xPos, yPos, innerPaintType);
-            } else {
-                if (mIsStateNumberDescending)
-                    //canvas.drawText(String.valueOf(noOfCircles - i), xPos, yPos, innerPaintType);
-                    canvas.drawText(getContext().getString(R.string.check_default), xPos, yPos, innerPaintType);
-                else
-                    // canvas.drawText(String.valueOf(i + 1), xPos, yPos, innerPaintType);
-                    canvas.drawText(getContext().getString(R.string.check_default), xPos, yPos, innerPaintType);
-
+                canvas.drawText(getContext().getString(R.string.check_default), xPos, yPos, innerPaintType);
             }
         }
-
     }
 
 
-    private Paint selectPaintType(int currentState, int statePosition, boolean checkStateCompleted) {
+    private Paint selectPaintType(int currentState, int statePosition, boolean checkStateCompleted, int noOfCircles) {
 
         currentState = mIsStateNumberDescending ? mMaxStateNumber - currentState : currentState;
         Paint foregroundPaint = mIsStateNumberDescending ? mStateNumberBackgroundPaint : mStateNumberForegroundPaint;
@@ -1241,7 +1220,6 @@ public class StateProgressBar extends View {
         if (checkStateCompleted) {
             return applyCheckStateCompletedPaintType(currentState, statePosition, checkStateCompleted);
         } else {
-
             if ((statePosition + 1 == currentState) || (statePosition + 1 < currentState && !checkStateCompleted)) {
                 return foregroundPaint;
             } else {
@@ -1253,9 +1231,9 @@ public class StateProgressBar extends View {
 
 
     private Paint applyCheckStateCompletedPaintType(int currentState, int statePosition, boolean checkStateCompleted) {
-        if (checkStateCompleted(currentState, statePosition, checkStateCompleted)) {
+        if (checkStateCompleted(currentState, statePosition, checkStateCompleted) ) {
             return mStateCheckedForegroundPaint;
-        } else if (statePosition + 1 == (mIsStateNumberDescending ? currentState + 1 : currentState)) {
+        } else if (statePosition + 1 == (mIsStateNumberDescending ? currentState + 1 : currentState) ) {
             return mStateNumberForegroundPaint;
         } else {
             return mStateNumberBackgroundPaint;
@@ -1504,6 +1482,5 @@ public class StateProgressBar extends View {
         }
         super.onRestoreInstanceState(state);
     }
-
 
 }
