@@ -13,12 +13,6 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Scroller;
 
-//import com.kofigyan.stateprogressbar.components.StateItem;
-//import com.kofigyan.stateprogressbar.components.StateItemDescription;
-//import com.kofigyan.stateprogressbar.components.StateItemNumber;
-//import com.kofigyan.stateprogressbar.listeners.OnStateItemClickListener;
-//import com.kofigyan.stateprogressbar.utils.FontManager;
-
 import androidx.core.content.ContextCompat;
 
 import com.tsolution.progressStateCustom.components.StateItem;
@@ -30,6 +24,12 @@ import com.tsolution.progressStateCustom.utils.FontManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+//import com.kofigyan.stateprogressbar.components.StateItem;
+//import com.kofigyan.stateprogressbar.components.StateItemDescription;
+//import com.kofigyan.stateprogressbar.components.StateItemNumber;
+//import com.kofigyan.stateprogressbar.listeners.OnStateItemClickListener;
+//import com.kofigyan.stateprogressbar.utils.FontManager;
 
 
 /**
@@ -53,7 +53,7 @@ public class StateProgressBar extends View {
     }
 
     private static final int MIN_STATE_NUMBER = 1;
-    private static final int MAX_STATE_NUMBER = 5;
+    private static final int MAX_STATE_NUMBER = 10;
 
     private static final String STATE_SIZE_KEY = "mStateSize";
     private static final String STATE_LINE_THICKNESS_KEY = "mStateLineThickness";
@@ -146,11 +146,13 @@ public class StateProgressBar extends View {
     private Paint mStateNumberBackgroundPaint;
     private Paint mBackgroundPaint;
     private Paint mForegroundPaint;
+    private Paint mSuggestionPaint;
     private Paint mCurrentStateDescriptionPaint;
     private Paint mStateDescriptionPaint;
 
     private int mBackgroundColor;
     private int mForegroundColor;
+    private int mSuggestColor;
     private int mStateNumberBackgroundColor;
     private int mStateNumberForegroundColor;
     private int mCurrentStateDescriptionColor;
@@ -240,6 +242,7 @@ public class StateProgressBar extends View {
 
             mBackgroundColor = a.getColor(R.styleable.StateProgressBar_spb_stateBackgroundColor, mBackgroundColor);
             mForegroundColor = a.getColor(R.styleable.StateProgressBar_spb_stateForegroundColor, mForegroundColor);
+            mSuggestColor = a.getColor(R.styleable.StateProgressBar_spb_stateForegroundColor, mSuggestColor);
             mStateNumberBackgroundColor = a.getColor(R.styleable.StateProgressBar_spb_stateNumberBackgroundColor, mStateNumberBackgroundColor);
             mStateNumberForegroundColor = a.getColor(R.styleable.StateProgressBar_spb_stateNumberForegroundColor, mStateNumberForegroundColor);
             mCurrentStateDescriptionColor = a.getColor(R.styleable.StateProgressBar_spb_currentStateDescriptionColor, mCurrentStateDescriptionColor);
@@ -292,6 +295,7 @@ public class StateProgressBar extends View {
 
         mBackgroundPaint = setPaintAttributes(mStateLineThickness, mBackgroundColor);
         mForegroundPaint = setPaintAttributes(mStateLineThickness, mForegroundColor);
+        mSuggestionPaint = setPaintAttributes(mStateLineThickness, mSuggestColor);
 
         mStateNumberForegroundPaint = setPaintAttributes(mStateNumberTextSize, mStateNumberForegroundColor, mCustomStateNumberTypeface != null ? mCustomStateNumberTypeface : mDefaultTypefaceBold);
         mStateCheckedForegroundPaint = setPaintAttributes(mStateNumberTextSize, mStateNumberForegroundColor, mCheckFont);
@@ -343,6 +347,13 @@ public class StateProgressBar extends View {
         if (mStateSize <= mStateNumberTextSize) {
             mStateSize = mStateNumberTextSize + mStateNumberTextSize / 2;
         }
+    }
+
+    public void setSuggestColor(int suggestColor) {
+        this.mSuggestColor = suggestColor;
+        mSuggestionPaint.setColor(mSuggestColor);
+        invalidate();
+
     }
 
     public void setBackgroundColor(int backgroundColor) {
@@ -429,6 +440,12 @@ public class StateProgressBar extends View {
         invalidate();
     }
 
+    public void setCurrentComplete(int currentStateNumber) {
+        mCurrentStateNumber = currentStateNumber;
+        updateCheckAllStatesValues(mEnableAllStatesCompleted);
+        invalidate();
+    }
+
     public int getCurrentStateNumber() {
         return mCurrentStateNumber;
     }
@@ -484,6 +501,7 @@ public class StateProgressBar extends View {
 
         mBackgroundPaint.setStrokeWidth(mStateLineThickness);
         mForegroundPaint.setStrokeWidth(mStateLineThickness);
+        mSuggestionPaint.setStrokeWidth(mStateLineThickness);
         requestLayout();
     }
 
@@ -673,7 +691,7 @@ public class StateProgressBar extends View {
         mStateNumberTextSize = 0.0f;
         mStateDescriptionSize = 15f;
 
-        mMaxStateNumber = StateNumber.FIVE.getValue();
+        mMaxStateNumber = StateNumber.TEN.getValue();
         mCurrentStateNumber = StateNumber.ONE.getValue();
 
         mSpacing = 4.0f;
@@ -1202,9 +1220,12 @@ public class StateProgressBar extends View {
                 canvas.drawText(getContext().getString(R.string.check_icon), xPos, yPos, innerPaintType);
             } else {
                 if (mIsStateNumberDescending)
-                    canvas.drawText(String.valueOf(noOfCircles - i), xPos, yPos, innerPaintType);
+                    //canvas.drawText(String.valueOf(noOfCircles - i), xPos, yPos, innerPaintType);
+                    canvas.drawText(getContext().getString(R.string.check_default), xPos, yPos, innerPaintType);
                 else
-                    canvas.drawText(String.valueOf(i + 1), xPos, yPos, innerPaintType);
+                    // canvas.drawText(String.valueOf(i + 1), xPos, yPos, innerPaintType);
+                    canvas.drawText(getContext().getString(R.string.check_default), xPos, yPos, innerPaintType);
+
             }
         }
 
@@ -1244,11 +1265,11 @@ public class StateProgressBar extends View {
 
     private boolean checkStateCompleted(int currentState, int statePosition, boolean checkStateCompleted) {
         if (!mIsStateNumberDescending) {
-            if ((mEnableAllStatesCompleted && checkStateCompleted) || (statePosition + 1 < currentState && checkStateCompleted)) {
+            if ((mEnableAllStatesCompleted && checkStateCompleted) || (statePosition + 1 <= currentState && checkStateCompleted)) {
                 return true;
             }
         } else {
-            if ((mEnableAllStatesCompleted && checkStateCompleted) || (statePosition + 1 > currentState + 1 && checkStateCompleted)) {
+            if ((mEnableAllStatesCompleted && checkStateCompleted) || (statePosition + 1 >= currentState + 1 && checkStateCompleted)) {
                 return true;
             }
         }
@@ -1261,9 +1282,9 @@ public class StateProgressBar extends View {
         currentState = mIsStateNumberDescending ? mMaxStateNumber + 1 - currentState : currentState;
 
         if (!mIsStateNumberDescending)
-            return mEnableAllStatesCompleted || statePosition + 1 < currentState;
+            return mEnableAllStatesCompleted || statePosition + 1 <= currentState;
         else
-            return mEnableAllStatesCompleted || statePosition + 1 > currentState;
+            return mEnableAllStatesCompleted || statePosition + 1 >= currentState;
     }
 
 

@@ -5,6 +5,7 @@
 
         <attr name="spb_stateBackgroundColor" format="color" />
         <attr name="spb_stateForegroundColor" format="color" />
+        <attr name="spb_stateSuggestionColor" format="color" />
 
         <attr name="spb_stateNumberBackgroundColor" format="color" />
         <attr name="spb_stateNumberForegroundColor" format="color" />
